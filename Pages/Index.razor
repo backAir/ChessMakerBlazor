@@ -1,0 +1,24 @@
+﻿@page "/"
+@page "/hello"
+
+<PageTitle>Index</PageTitle>
+
+<h1>Chessmaker</h1>
+
+
+@* <SurveyPrompt Title="How is Blazor working for you?" /> *@
+
+@* <Counter startingValue=10/> *@
+
+
+@* <button @onclick="text"> run js script</button> *@
+
+
+<Chess debug="false"></Chess>
+
+@inject IJSRuntime JS
+@code{
+    public async void text(){
+        await JS.InvokeAsync<string>("showAlert","haha yes");
+    }
+}

@@ -1,0 +1,466 @@
+@* start of css *@
+<style>
+    
+
+    .mud-tabs-toolbar-wrapper, .mud-tooltip-root {
+        width: 100% !important;
+    }
+
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 25px;
+        width: 25px;
+        background-color: #eee;
+    }
+
+    .customisation-content {
+        overflow-y: scroll;
+
+        gap: 5px;
+
+        display: flex;
+        flex-direction: column;
+
+        height: 100%;
+        border-radius: 10px;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .side-ui{
+        padding-top: 0px;
+        background-color: #262626;
+        border-radius: 10px;
+        
+        @* black border *@
+        border: 5px solid #171717;
+        
+        display: flex;
+        flex-direction: column;
+
+        border-radius: 10px;
+        width: 100%;
+    }
+
+    .customisation {
+        user-select: none;
+        height: 100%;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: scroll;
+    }
+
+    .tabs {
+        margin-bottom: 5px;
+        display: flex;
+        flex-direction: row;
+        @* border-bottom: solid #171717; *@
+        background-color: #171717;
+    }
+
+    .tab {
+        user-select: none;
+        flex: 1;
+        text-align: center;
+        font-size: 2em;
+        font-weight: bolder;
+        cursor: pointer;
+
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+
+    }
+
+    .tab-focused {
+        background-color: #262626;
+    }
+
+    .tab:hover, .tab:focus {
+        color: rgb(99, 99, 99);
+    }
+
+    .gameMode-button {
+        
+        width: 100%;
+        box-shadow: 0px 1px 0px 0px #1c1b18;
+        background:linear-gradient(to bottom, #eae0c2 5%, #ccc2a6 100%);
+        background-color:#eae0c2;
+        border-radius:15px;
+        border:2px solid #aaa18b;
+        display:inline-block;
+        cursor:pointer;
+        color:#505739;
+        font-family:Arial;
+        font-size:14px;
+        font-weight:bold;
+        padding:12px 16px;
+        text-decoration:none;
+        text-shadow:0px 1px 0px #ffffff;
+    }
+    .gameMode-button:hover {
+        background:linear-gradient(to bottom, #ccc2a6 5%, #eae0c2 100%);
+        background-color:#ccc2a6;
+    }
+    .gameMode-button:active {
+        position:relative;
+        top:1px;
+    }
+
+
+    .StartGame {
+        padding: 5px;
+        display: flex;
+    }
+    .StartGame-button {
+        margin: 4px;
+        width: 100%;
+        box-shadow: 0px 1px 0px 0px #1c1b18;
+        background:linear-gradient(to bottom, #a6c076 5%, #a0c45d 100%);
+        background-color:#a0c45d;
+        border-radius:15px;
+        border:2px solid #769144;
+        display:inline-block;
+        cursor:pointer;
+        color:#374420;
+        font-family:Arial;
+        font-size:14px;
+        font-weight:bold;
+        padding:12px 16px;
+        text-decoration:none;
+        text-shadow:0px 1px 0px #91a867;
+    }
+    
+    .StartGame-button:hover {
+        background:linear-gradient(to bottom, #798d56 5%, #809164 100%);
+        background-color:#798d56;
+    }
+    .StartGame-button:active {
+        position:relative;
+        top:1px;
+    }
+
+
+
+    .vertical-flex-container {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .flex-container {
+        margin: auto;
+        max-height: 90%;
+        height: 100%;
+        width: 100%;
+        display: flex;
+    }
+    @* if the height of the screen is bigger than the width of the screne the flex-container is different *@
+    
+    @@media (max-aspect-ratio: 1/1) {
+        .vertical-flex-container {
+            height: 200% !important;
+        }
+        .flex-container {
+            height: 200% !important;
+            flex-direction: column;
+        }
+        .flex1 {
+            width: 100%;
+            max-height:100% !important;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+    
+
+    .flex1 {
+        margin: auto;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+    }
+    .flex2 {
+    }
+
+
+
+
+
+    .resizeable{
+        @*resize: horizontal;
+         overflow: auto; *@
+    }
+
+</style>
+
+@* Normal Board CSS *@
+@if(chessBoard != null){
+    <style>
+    .piece {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        object-fit: contain;
+        z-index: 1;
+    }
+    .chessboard {
+        grid-template-columns: repeat(@chessBoard.boardSize[0], 1fr);
+        grid-template-rows: repeat(@chessBoard.boardSize[1], 1fr);
+        aspect-ratio: @(chessBoard.boardSize[0]) / @(chessBoard.boardSize[1]);
+        @* height: calc(100vh/(@(chessBoard.boardSize[0]) / @(chessBoard.boardSize[1]))); *@
+    }
+    </style>
+}
+
+
+<style>
+
+
+.chessboard {
+    user-select: none;
+    display: grid;
+    position: relative;
+    @* resize: both; *@
+    max-height:100%;
+    max-width:100%;
+
+
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: auto;
+    margin-right: auto;
+
+}
+    
+.portal {
+    z-index: 1;
+}
+
+.square {
+    position: relative;
+    box-sizing: border-box;
+    margin: 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.square img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: auto;
+  object-fit: contain;
+}
+
+.leftHalf {
+    clip-path: polygon(50% 0%,50% 100%,0% 100%,0% 0%)
+}
+.rightHalf {
+    clip-path: polygon(100% 0%,100% 100%,50% 100%,50% 0%);
+}
+
+.white0 {background-color: #f0d9b5;}
+.black0 {background-color: #b58863;}
+.blacker0 {background-color: #805939}
+@* selected *@
+.white1 {background-color: #58c48b;}
+.black1 {background-color: #479e70;}
+.blacker1 {background-color: #306b4b;}
+@* path *@
+.white2 {background-color: #b7c1f0;}
+.black2 {background-color: #6372b6;}
+.blacker2 {background-color: #475283;}
+@* attack *@
+.white3 {background-color: #f0b7b7;}
+.black3 {background-color: #b66363;}
+.blacker3 {background-color: #834747;}
+@* movement *@
+.white4 {background-color: #f2f87d;}
+.black4 {background-color: #d0c647;}
+.blacker4 {background-color: #9d9535;}
+
+
+@* Hex board CSS *@
+
+
+
+:root {
+  --hex-size: 70px;
+}
+
+.hexboard {
+    width: 100%;
+    zoom:70%;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: var(--hex-size);
+}
+
+.hexPiece {
+  zoom:90%;
+  height: var(--hex-size); 
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.cell {
+  margin-top: -7px;
+  margin-right: -17.5px;
+  @* background-color: var(--cell-color); *@
+  height: var(--hex-size);
+  width: var(--hex-size);
+  position: relative;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+}
+
+</style>
+
+@code {
+    [Parameter]
+    public ChessBoard chessBoard {get;set;}
+}
+
+
+
+
+
+
+
+
+
+
+@* CHECKBOX HERE *@
+<style>
+
+/* checkbox settings 👇 */
+
+
+.checkbox-wrapper {
+
+}
+
+
+.checkbox-text {
+    font-size: 20px;
+    text-align: center;
+        vertical-align: middle;
+}
+
+.ui-checkbox {
+    @* allign vertically center *@
+
+    vertical-align: middle;
+
+  --primary-color: #1677ff;
+  --secondary-color: #fff;
+  --primary-hover-color: #4096ff;
+  /* checkbox */
+  --checkbox-diameter: 20px;
+  --checkbox-border-radius: 5px;
+  --checkbox-border-color: #d9d9d9;
+  --checkbox-border-width: 1px;
+  --checkbox-border-style: solid;
+  /* checkmark */
+  --checkmark-size: 1.2;
+}
+
+.ui-checkbox, 
+.ui-checkbox *, 
+.ui-checkbox *::before, 
+.ui-checkbox *::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.ui-checkbox {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: var(--checkbox-diameter);
+  height: var(--checkbox-diameter);
+  border-radius: var(--checkbox-border-radius);
+  background: var(--secondary-color);
+  border: var(--checkbox-border-width) var(--checkbox-border-style) var(--checkbox-border-color);
+  -webkit-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+}
+
+.ui-checkbox::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -webkit-box-shadow: 0 0 0 calc(var(--checkbox-diameter) / 2.5) var(--primary-color);
+  box-shadow: 0 0 0 calc(var(--checkbox-diameter) / 2.5) var(--primary-color);
+  border-radius: inherit;
+  opacity: 0;
+  -webkit-transition: all 0.5s cubic-bezier(0.12, 0.4, 0.29, 1.46);
+  -o-transition: all 0.5s cubic-bezier(0.12, 0.4, 0.29, 1.46);
+  transition: all 0.5s cubic-bezier(0.12, 0.4, 0.29, 1.46);
+}
+
+.ui-checkbox::before {
+  top: 40%;
+  left: 50%;
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 7px;
+  border-right: 2px solid var(--secondary-color);
+  border-bottom: 2px solid var(--secondary-color);
+  -webkit-transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  -ms-transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  transform: translate(-50%, -50%) rotate(45deg) scale(0);
+  opacity: 0;
+  -webkit-transition: all 0.1s cubic-bezier(0.71, -0.46, 0.88, 0.6),opacity 0.1s;
+  -o-transition: all 0.1s cubic-bezier(0.71, -0.46, 0.88, 0.6),opacity 0.1s;
+  transition: all 0.1s cubic-bezier(0.71, -0.46, 0.88, 0.6),opacity 0.1s;
+}
+
+/* actions */
+
+.ui-checkbox:hover {
+  border-color: var(--primary-color);
+}
+
+.ui-checkbox:checked {
+  background: var(--primary-color);
+  border-color: transparent;
+}
+
+.ui-checkbox:checked::before {
+  opacity: 1;
+  -webkit-transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
+  -ms-transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
+  transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
+  -webkit-transition: all 0.2s cubic-bezier(0.12, 0.4, 0.29, 1.46) 0.1s;
+  -o-transition: all 0.2s cubic-bezier(0.12, 0.4, 0.29, 1.46) 0.1s;
+  transition: all 0.2s cubic-bezier(0.12, 0.4, 0.29, 1.46) 0.1s;
+}
+
+.ui-checkbox:active:not(:checked)::after {
+  -webkit-transition: none;
+  -o-transition: none;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  transition: none;
+  opacity: 1;
+}
+
+</style>

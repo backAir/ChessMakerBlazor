@@ -1,0 +1,483 @@
+@page "/chess"
+@using System.Text
+@using System.Threading
+@using System.Net.WebSockets
+@using Microsoft.AspNetCore.SignalR.Client
+@using MyApplication.Pages.Boards
+@inject IConfiguration Config
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ISyncLocalStorageService localStorage
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+@* @if(webSocket!=null){
+    <h3>State: @webSocket.State</h3>
+} *@
+
+
+<ChessCSS chessBoard="@chessBoard"/>
+
+<div class="vertical-flex-container">
+    <div>
+        <div class="">
+            @if(chessBoard != null && chessBoard.gameOver){
+                <p role="Game Over"> game over: @(chessBoard.winnerText)</p>
+            }
+        </div>
+    </div>
+
+
+    @* <button onclick="document.getElementById('sound').play()">Play through Javascript</button> *@
+
+    
+
+    <div class="flex-container">
+        
+        @if(chessBoard != null){
+            <div class="flex1 resizeable">
+            @* Chessboard *@
+            @if(boardType == 0){
+                <ChessBoardUi Chess="@this"></ChessBoardUi>
+            }
+            
+            @* Hex Chessboard *@
+            @if(boardType == 1){
+                <HexBoardUi Chess="@this"></HexBoardUi>
+            }
+            </div>
+
+        }else
+        {
+            @* <p> ChessBoard here </p> <br> *@
+
+            @if(onlineGameID != -1){
+                <div>
+                    <h1> Game ID: @onlineGameID</h1>
+
+                    <br>
+                    <p>link to join game: @NavigationManager.Uri.Replace("https://","")</p>
+                    <br>
+                    <button class="createGameButton" @onclick="CopyToClipboard">Copy link to clipbloard</button>
+                </div>
+
+            }
+        }
+
+        
+        
+        @* Side UI *@
+        <div class="side-ui">
+            @code{
+                string focused = "tab-focused";
+                bool isChecked = true;
+
+                void SetTab(Tabs tab){
+                    tabSelected = tab;
+                }
+            }
+            <div class="tabs">
+                <div class="tab @(tabSelected == Tabs.presets? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.presets);}">
+                    Presets
+                </div>
+                <div class="tab @(tabSelected == Tabs.ruleset? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.ruleset);}">
+                    Rules
+                </div>
+            </div>
+
+            <div class="customisation">
+
+                @if(tabSelected == Tabs.presets){
+                    @* <div>
+                        <center><h1> Select the gamemode: </h1></center>
+                    </div> *@
+                    <br>
+                    @* GameMode selection screen *@
+                    <div class="customisation-content"> 
+                        
+                        @* Create a div for each gamemode *@
+                        @if(!online){
+                            @foreach (var item in GamemodeList.GameModes)
+                            {
+                                <button class="gameMode-button" @onclick="()=>{SetGamemode(item.Key);}">
+                                    <h2>@item.Key</h2>
+                                    <p>@item.Value</p>
+                                </button>
+                            }
+                        }
+                        
+                    </div>
+                }
+                
+                @if(tabSelected == Tabs.ruleset){
+
+                    <div class="customisation-content"> 
+
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" class="ui-checkbox" @bind="@chessBoard.rules.atomic">
+                            <span class="checkbox-text">Atomic</span>
+                        </label>
+
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" class="ui-checkbox" @bind="@chessBoard.rules.kingCanCastleAnything">
+                            <span class="checkbox-text">king Can Castle Anything</span>
+                        </label>
+
+                    </div>
+                }
+                
+
+            </div>
+            
+            @* Start Game DIV *@
+            <div class="StartGame">
+                <button class="StartGame-button" @onclick="()=>{}">
+                    <h2>Play locally</h2>
+                </button>
+                <button class="StartGame-button" @onclick="()=>{}">
+                    <h2>Play online</h2>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code{
+
+
+    public enum Tabs{
+        presets,
+        ruleset
+    }
+
+    public async Task CopyToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", NavigationManager.Uri.Replace("https://",""));
+    }
+
+
+
+    public Tabs tabSelected = new Tabs();
+
+    // Variables
+    [Parameter]
+    public bool debug {get; set;} = true;
+    [Parameter]
+    public bool online {get; set;} = false;
+    [Parameter]
+    public int onlineGameID {get; set;} = -1;
+    [Parameter]
+    public string activeGameMode {get; set;} = "";
+    public int boardType = 1;
+    bool canMove = false;
+    List<(int,int)> selectedSquares = new List<(int,int)>();
+    public string[,,] PiecesImgs = null;
+
+    public string[,] Portals = null;
+    public byte[,] SquareState = null;
+
+    SignalRClient client;
+
+
+    public ChessBoard chessBoard = null;
+    int[] selectedSquare = new int[]{-1,-1};
+
+    public int onlineColor = -1;
+    int boardWidth = 400;
+    public string onlineSessionID;
+
+    // On initialized
+    protected override async Task OnInitializedAsync()
+    {
+        #if !DEBUG
+            debug = false;
+        #endif
+
+        // ptn de canadiens ces jours
+        if(!online){
+            SetGamemode("Mini Chess");
+            canMove = true;
+            return;
+        }
+
+        client = new SignalRClient();
+        client.page = this;
+        await client.Connect();
+
+
+        if(onlineGameID == -1){ // arg is -1 if you want to create a game
+            var createGameArgs = new CreateGameArgs(activeGameMode,"Guest 1");
+            client.CreateGame(createGameArgs);
+        }else
+        {
+            @* var playerID = localStorage.GetItem<string>("playerID");
+            var storedGameID = localStorage.GetItem<string>("gameID"); *@
+
+            var activeGames = localStorage.GetItem<Dictionary<int,string>>("activeGames");
+            
+            if(activeGames.ContainsKey(onlineGameID)){
+                Debug.Log("yay contains key");
+                onlineSessionID = activeGames[onlineGameID];
+                var reconnectArgs = new ReconnectArgs(onlineSessionID,onlineGameID);
+                client.Reconnect(reconnectArgs);
+                return;
+            }            
+
+            var joinGameArgs = new JoinedGameArgs(onlineGameID,"Guest 2");
+            client.JoinGame(joinGameArgs);
+            Debug.Log("Joined Game");
+        }
+        
+    }
+
+    public void ReloadPage(){
+        @* NavigationManager.NavigateTo(NavigationManager.BaseUri+"/online/"+onlineGameID,true); *@
+    }
+
+    // Reactions to messages from the server:
+    public void CreateOnlineGame(GameCreatedArgs args, bool reconnect = false){
+        if(onlineGameID==-1){
+            NavigationManager.NavigateTo(NavigationManager.Uri+"/"+args.gameID);
+        }
+        activeGameMode = args.gameMode;
+        onlineGameID = args.gameID;
+        onlineColor = args.color;
+        onlineSessionID = args.playerID;
+
+        var activeGames = localStorage.GetItem<Dictionary<int,string>>("activeGames");
+        activeGames[onlineGameID] = args.playerID;
+        if(!reconnect){
+            localStorage.SetItem("activeGames",activeGames);
+        }
+
+    }
+    public void StartOnlineGame(){
+        Debug.Log("starting online game"+ activeGameMode);
+        SetGamemode(activeGameMode, true);
+        canMove = true;
+    }
+    public void ReceiveMove(MovePiece move){
+        if(chessBoard.CanMove(move.from[0], move.from[1], move.to[0], move.to[1]) && chessBoard.turn != onlineColor){
+            MovePiece(move.from[0], move.from[1], move.to[0], move.to[1], false);
+        }else{
+            
+        }
+        RefreshBoard();
+    }
+
+    public void Reconnect(ToClientReconnectArgs args){
+        //Todo: this function
+
+        //TODO: check if new moves happened in the meantime
+        if(chessBoard != null){
+            Debug.Log("all moves Client: "+chessBoard.allMoves.Count);
+            Debug.Log("all moves Server: "+args.allMoves.Count);
+            return;
+        }
+
+
+        var gameCreatedArgs = new GameCreatedArgs(args.gameID,args.gameMode,args.color,args.playerID);
+        CreateOnlineGame(gameCreatedArgs,true);
+        if(args.gameStarted){
+            StartOnlineGame();
+        }
+
+        onlineColor = args.color;
+        var moves = args.allMoves;
+        for (var i = 0; i < moves.Count; i++)
+        {
+            MovePiece(moves[i][0][0],moves[i][0][1],moves[i][1][0],moves[i][1][1]);
+        }
+        Debug.Log("Reconnected");
+        RefreshBoard();
+    }
+
+
+
+    public ValueTask DisposeAsync(){
+        @* if(client!=null){
+            return client.DisposeAsync();
+        } *@
+        return ValueTask.CompletedTask;
+    }
+
+    // Create game
+    public void SetGamemode(string gameMode, bool online = false){
+        if(online){
+            Debug.Log("SetGamemode: "+gameMode);
+        }
+
+        if(gameMode == "Hex Chess"){
+            boardType = 1;
+        }else
+        {
+            boardType = 0;
+        }
+        selectedSquares = new List<(int,int)>();
+        chessBoard = new ChessBoard(gameMode);//Everything,Classic
+        
+        PiecesImgs = new string[chessBoard.boardSize[0],chessBoard.boardSize[1],2];
+        SquareState = new byte[chessBoard.boardSize[0],chessBoard.boardSize[1]];
+
+        Portals = SharedFunctions.GetRenderedPortals(chessBoard);
+        RefreshBoard();
+    }
+
+    // Board actions
+    public void ClickSquare(int x, int y){
+        @* Debug.Log("clicked: "+x+"|"+y); *@
+        if(chessBoard.gameOver || !canMove || (online && chessBoard.turn != onlineColor)){
+            return;
+        }
+        if(selectedSquare[0]==-1){
+            if(chessBoard.board[x,y] != null && chessBoard.board[x,y].IsTeam(chessBoard.turn)){
+                SelectSquare(x,y);
+            }else
+            {
+                DeselectSquare();
+            }
+        }else
+        {
+            if(x == selectedSquare[0] && y == selectedSquare[1]){
+                DeselectSquare();
+            }else
+            {
+                if(chessBoard.board[x,y] != null){
+                    if(chessBoard.CanMove(selectedSquare[0],selectedSquare[1],x,y)){
+                        MovePiece(selectedSquare[0],selectedSquare[1],x,y);
+                        return;
+                    }else
+                    {
+                        if(chessBoard.board[x,y].IsTeam(chessBoard.turn)){
+                            SelectSquare(x,y);
+                            return;
+                        }
+                    }
+                }
+
+                if(chessBoard.CanMove(selectedSquare[0],selectedSquare[1],x,y)){
+                        MovePiece(selectedSquare[0],selectedSquare[1],x,y);
+                        return;
+                    }
+                DeselectSquare();
+                return;
+            }
+        }
+    }
+    public void MovePiece(int fromX, int fromY, int toX, int toY, bool sendToServer = true){
+        chessBoard.MovePiece(fromX, fromY, toX, toY, this);
+        if(online && sendToServer){
+            var move = new SendMoveArgs(new int[]{fromX, fromY}, new int[]{toX,toY},onlineGameID, chessBoard.actionsMade);
+            client.SendMove(move);
+            
+            @* await client.SendMessageAsync(JsonConvert.SerializeObject(move)); *@
+        }
+    }
+
+    public void SelectSquare(int x, int y){
+        DeselectSquare();
+        selectedSquare[0] = x;
+        selectedSquare[1] = y;
+        SquareState[x,y] = 1;
+        selectedSquares.Add((x,y));
+        foreach (var item in chessBoard.legalMoves[x,y])
+        {
+            if(chessBoard.board[item.Key.Item1,item.Key.Item2] == null){
+                // Check for en passant or checkers capture
+                selectedSquares.Add((item.Key.Item1,item.Key.Item2));
+                if(item.Value.capturedPiece != null){
+                    SquareState[item.Key.Item1,item.Key.Item2] = 3; // attack (red)
+                    continue;
+                }
+                SquareState[item.Key.Item1,item.Key.Item2] = 2; // path (blue)
+            }else
+            {
+                //Check for castling
+                selectedSquares.Add((item.Key.Item1,item.Key.Item2));
+                if(item.Value.castlingRookStart != null &&
+                    item.Value.castlingRookStart[0] == item.Key.Item1 && item.Value.castlingRookStart[1] == item.Key.Item2)
+                {
+                    SquareState[item.Key.Item1,item.Key.Item2] = 2; // path (blue)
+                    continue;
+                }
+                SquareState[item.Key.Item1,item.Key.Item2] = 3; // attack (red)
+            }
+        }
+    }
+    public void DeselectSquare(){
+        selectedSquare[0] = -1;
+        //SquareState = new byte[chessBoard.boardSize[0],chessBoard.boardSize[1]];
+        foreach (var item in selectedSquares)
+        {
+            SquareState[item.Item1,item.Item2] = 0;
+        }
+        selectedSquares = new List<(int, int)>();
+        
+        if(chessBoard.allMoves.Count() == 0){
+            return;
+        }
+        var lastMove = chessBoard.allMoves[chessBoard.allMoves.Count()-1];
+
+        SquareState[lastMove[0,0],lastMove[0,1]] = 4;
+        SquareState[lastMove[1,0],lastMove[1,1]] = 4;
+        selectedSquares.Add((lastMove[0,0],lastMove[0,1]));
+        selectedSquares.Add((lastMove[1,0],lastMove[1,1]));
+    }
+
+    public void RefreshBoard(){
+        SharedFunctions.GetRenderedBoard(chessBoard, PiecesImgs);
+        StateHasChanged();
+    }
+
+    // Drag and drop
+
+    public void DragStart(int x, int y){
+        if(chessBoard.board[x,y] != null && chessBoard.board[x,y].IsTeam(chessBoard.turn)){
+            if(chessBoard.gameOver || !canMove || (online && chessBoard.turn != onlineColor)){
+                return;
+            }
+            dragSquare[0] = x;
+            dragSquare[1] = y;
+            SelectSquare(x,y);
+        }
+    
+    }
+
+
+    public void DragEnter(int x, int y){
+        dragSquare[0] = x;
+        dragSquare[1] = y;
+    }
+
+    int[] dragSquare = new int[]{-1,-1};
+
+    public void DragEnd(int x, int y){
+        Debug.Log("DragEnd: "+x+"|"+y);
+        if(dragSquare[0] == x && dragSquare[1] == y){
+            return;
+        }
+        ClickSquare(dragSquare[0],dragSquare[1]);
+    }
+
+ 
+    public bool IsWhiteSquare(int col, int row)
+    {
+        return (row + col) % 2 != 0;
+    }
+    public string HexagonColor(int value){
+        switch ((value)%3)
+        {
+            case 0:
+                return "blacker";
+            case 1:
+                return "black";
+            case 2:
+                return "white";
+            default:
+                return "black";
+        }
+    }
+}
+
+
+

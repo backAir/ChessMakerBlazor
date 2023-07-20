@@ -1,0 +1,27 @@
+@page "/js"
+@inject IJSRuntime JSRuntime
+
+
+@* button that calls the Button method *@
+<button @onclick="@Button">Click Me</button>
+
+<ul>  
+</ul>
+
+@code
+{
+
+    private async void Button(){
+        var messages = await OtherTest("paul"); 
+        Test(messages);
+    }
+    private void Test(string text){
+        JSRuntime.InvokeVoidAsync("alert", text);
+    }
+
+    private ValueTask<string> OtherTest(string name){
+        return JSRuntime.InvokeAsync<string>("hello", name);
+    }
+
+    
+}

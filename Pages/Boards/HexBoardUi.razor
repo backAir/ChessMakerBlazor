@@ -1,0 +1,43 @@
+<div class="hexboard">
+    @for (var i = 0; i < files.Count; i++)
+    {
+        <div class="file" id=@filesNames[i]>
+        @for (var j = files[i]-1; j >=0; j--)
+        {
+            int currentCol = i;
+            int currentRow = j;
+            if(Chess.online && Chess.onlineColor == 1){
+                currentCol = Chess.chessBoard.boardSize[0]-currentCol-1;
+                currentRow = Chess.chessBoard.boardSize[1]-currentRow-1;
+            }
+
+            if(i>5){
+                currentRow +=currentCol-5;
+            }
+            <div class="cell @currentCol @currentRow @(Chess.HexagonColor(currentCol+currentRow)+Chess.SquareState[currentCol, currentRow])" id=@(filesNames[currentCol]+""+(currentRow+1)) @onmousedown="() => Chess.ClickSquare(currentCol, currentRow)"  @ondragstart="() => Chess.DragStart(currentCol, currentRow)" @ondragenter="() => Chess.DragEnter(currentCol, currentRow)" @ondragend="() => Chess.DragEnd(currentCol, currentRow)">
+
+
+                @if(Chess.PiecesImgs[currentCol, currentRow, 1]!=null){
+                    <img src="@Chess.PiecesImgs[currentCol, currentRow, 0]" class="piece leftHalf" />
+                    <img src="@Chess.PiecesImgs[currentCol, currentRow, 1]" class="piece rightHalf" />
+                }else
+                {
+                    @if(Chess.PiecesImgs[currentCol, currentRow, 0]!=null){
+                        <img src="@Chess.PiecesImgs[currentCol, currentRow, 0]" class="hexPiece" />
+                    }
+                }
+                @* <img src="@PiecesImgs[currentCol, currentRow, 0]" class="hexPiece" /> *@
+
+            </div>
+        }
+        </div>
+    }
+</div>
+
+
+@code{
+    List<int> files = new List<int>(){6,7,8,9,10,11,10,9,8,7,6};
+    string filesNames = "abcdefghikl";
+    [Parameter]
+    public Chess Chess {get; set;}
+}

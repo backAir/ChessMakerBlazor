@@ -1,0 +1,41 @@
+<div class="chessboard">
+    @for (int row = Chess.chessBoard.boardSize[1]-1; row >=0 ; row--)
+    {
+        @for (int col = 0; col <Chess.chessBoard.boardSize[0] ; col++)
+        {
+            int currentRow = row;
+            int currentCol = col;
+            @if(Chess.online && Chess.onlineColor == 1){
+                currentRow = Chess.chessBoard.boardSize[1]-row-1;
+                currentCol = Chess.chessBoard.boardSize[0]-col-1;
+            }
+
+            <div class="square @(Chess.IsWhiteSquare(currentCol, currentRow) ? "white"+Chess.SquareState[currentCol, currentRow] : "black"+Chess.SquareState[currentCol, currentRow]) @currentCol @currentRow" @ondragstart="() => Chess.DragStart(currentCol, currentRow)" @ondragenter="() => Chess.DragEnter(currentCol, currentRow)" @ondragend="() => Chess.DragEnd(currentCol, currentRow)" @onmousedown="() => Chess.ClickSquare(currentCol, currentRow)">
+
+                    @if(Chess.PiecesImgs[currentCol, currentRow, 1]!=null){
+                        <img src="@Chess.PiecesImgs[currentCol, currentRow, 0]" class="piece leftHalf" />
+                        <img src="@Chess.PiecesImgs[currentCol, currentRow, 1]" class="piece rightHalf" />
+                    }else
+                    {
+                        @if(Chess.PiecesImgs[currentCol, currentRow, 0]!=null){
+                            <img src="@Chess.PiecesImgs[currentCol, currentRow, 0]" class="piece" />
+                        }
+                    }
+
+                    @if(Chess.Portals[currentCol, currentRow]!=null){
+                        <img src= "@(Globals.basePath + "images/Portal.png")" class="portal" style="filter: hue-rotate(@Chess.Portals[currentCol, currentRow]);" />
+                    }
+            </div>
+        }
+    }
+</div>
+
+
+@code{
+    [Parameter]
+    public Chess Chess {get; set;}
+
+    void a(){
+        var a = this;
+    }
+}

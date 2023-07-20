@@ -1,0 +1,8 @@
+{
+    "dotnet.defaultSolution": "MyApplication.sln",
+    "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#805939",
+        "activityBar.activeBackground": "#523f2f",
+        "tab.activeBackground": "#523f2f"
+      }
+}

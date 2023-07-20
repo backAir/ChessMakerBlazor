@@ -1,0 +1,44 @@
+{
+	"files": [
+		{
+			"path": "Pages/Chess.razor",
+			"bookmarks": [
+				{
+					"line": 37,
+					"column": 21,
+					"label": "chessboard"
+				},
+				{
+					"line": 42,
+					"column": 18,
+					"label": "hex chessboard"
+				},
+				{
+					"line": 52,
+					"column": 24,
+					"label": "online waiting ui"
+				},
+				{
+					"line": 67,
+					"column": 18,
+					"label": "side ui"
+				},
+				{
+					"line": 303,
+					"column": 16,
+					"label": "create game"
+				},
+				{
+					"line": 325,
+					"column": 13,
+					"label": "board actions"
+				},
+				{
+					"line": 431,
+					"column": 9,
+					"label": "drag and drop"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,115 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        @* <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" /> *@
+        @* <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor/" Target="_blank" /> *@
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">ChessMaker</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        <div Class="content">
+            @Body
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine("What are you doing here ? :p");
+    }
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}
+
+<style>
+    .content {
+        padding: 10px;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    body {
+        background-color: #323232;
+        color:#dadada;
+    }
+
+    .mud-drawer-content {
+        height: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-shrink: 0;
+        flex-grow: 1;
+        flex: 0 0 auto;
+        flex-direction: column;
+        color:#dadada;
+        background-color: #262626;
+    }
+    
+    .mud-drawer-header {
+        background-color: #171717;
+        color: white;
+    }
+
+    .mud-toolbar {
+        background-color: #171717;
+        color: white;
+    }
+
+    .mud-container-maxwidth-lg {
+    max-width: 100%;
+    }
+
+    .mud-main-content {
+        height: 100vh;
+    }
+
+    .mud-select {
+        display: block;
+    }
+    .mud-input {
+        color: #dadada;
+    }
+
+    .createGameButton {
+        box-shadow: 0px 1px 0px 0px #1c1b18;
+        background:linear-gradient(to bottom, #eae0c2 5%, #ccc2a6 100%);
+        background-color:#eae0c2;
+        border-radius:15px;
+        border:2px solid #333029;
+        display:inline-block;
+        cursor:pointer;
+        color:#505739;
+        font-family:Arial;
+        font-size:14px;
+        font-weight:bold;
+        padding:12px 16px;
+        text-decoration:none;
+        text-shadow:0px 1px 0px #ffffff;
+    }
+    .createGameButton:hover {
+        background:linear-gradient(to bottom, #ccc2a6 5%, #eae0c2 100%);
+        background-color:#ccc2a6;
+    }
+    .createGameButton:active {
+        position:relative;
+        top:1px;
+    }
+</style>

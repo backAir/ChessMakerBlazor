@@ -1,0 +1,84 @@
+@page "/online/{gameID:int}"
+@page "/online"
+@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ISyncLocalStorageService localStorage
+
+
+<PageTitle>Online</PageTitle>
+
+@if(!gameStarted){
+    <div>
+        <h1>Gamemode:</h1>
+
+        <MudSelect Theme="" Class="mud-dark gameModeSelect" @bind-Value="@gameMode" AnchorOrigin="Origin.BottomCenter" Variant="Variant.Outlined">
+            @foreach (var item in GamemodeList.GameModes)
+            {
+                <MudSelectItem Value=@item.Key />
+            }
+        </MudSelect>
+
+
+        <br>
+        <button class="createGameButton" @onclick="StartGame">Create Game</button>
+
+    </div>
+}else{
+    <Chess online="true" activeGameMode="@gameMode" onlineGameID="@gameID"></Chess>
+}
+
+<style>
+
+
+
+    .gameModeSelect {
+        width: fit-content;
+    }    
+</style>
+
+
+@code{
+
+
+    [Parameter]
+    public int gameID {get; set;} = 0;
+    public bool gameStarted = false;
+    public string gameMode = "Mini Chess";
+    private void StartGame()
+    {
+        gameID = -1;
+        gameStarted = true;
+    }
+    @* private void JoinGame()
+    {
+        gameStarted = true;
+        NavigationManager.NavigateTo(NavigationManager.Uri+"/"+gameID);
+    } *@
+    void SetGamemode(string gameMode){
+        this.gameMode = gameMode;
+    }
+
+
+    protected override void OnInitialized(){
+
+        @* localStorage.SetItem("name", "John Smith");
+        var name = localStorage.GetItem<string>("name"); *@
+        
+        var activeGames = localStorage.GetItem<Dictionary<int,string>>("activeGames");
+
+        if(activeGames == null){
+            localStorage.SetItem("activeGames", new Dictionary<int,string>());
+        }else
+        {
+            @* foreach (var item in activeGames)
+            {
+                Debug.Log(item.Key+" "+item.Value);
+            }*@
+        } 
+
+
+
+        if(gameID != 0){
+            gameStarted = true;
+        }
+    }
+}
