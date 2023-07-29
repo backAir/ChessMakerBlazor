@@ -218,7 +218,7 @@ RNBQRNBQRNBQRNBQRNBQRNBQRNBQRNBQRNBQRNBQRNBQRNBQRKBQRNBQRNBQRNBQRNBQRNBQRNBQRNBQ
                         CP:w,1,CP:w,1,CP:w,1,CP:w,1 w - 0 1";
                 boardSize = new int[2] { 8, 8};
                 BetterFen = true;
-                rules.promoteZone = 8;
+                rules.promotePiece = "CK";
                 break;
             case "Hex Chess":
                 FEN = @"

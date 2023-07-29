@@ -19,22 +19,22 @@
 					"label": "online waiting ui"
 				},
 				{
-					"line": 67,
+					"line": 66,
 					"column": 18,
 					"label": "side ui"
 				},
 				{
-					"line": 303,
+					"line": 326,
 					"column": 16,
 					"label": "create game"
 				},
 				{
-					"line": 325,
+					"line": 349,
 					"column": 13,
 					"label": "board actions"
 				},
 				{
-					"line": 431,
+					"line": 455,
 					"column": 9,
 					"label": "drag and drop"
 				}

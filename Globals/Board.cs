@@ -111,7 +111,7 @@ public class ChessBoard
         var activeColor = turn;
         var opponentColor = (turn == 0) ? 1 : 0;
 
-        var killedKing = false;
+        var killedOpponentKing = false;
         DeletePiece(fromX, fromY, opponentColor);
         if (portals[toX, toY] != null)
         {
@@ -127,8 +127,8 @@ public class ChessBoard
         {
             if (move.capturedPiece != null)
             {
-                var kingDead = DeletePiece(move.capturedPiece[0], move.capturedPiece[1], opponentColor);
-                if (kingDead) { killedKing = true; }
+                var killedPiece = DeletePiece(move.capturedPiece[0], move.capturedPiece[1], opponentColor);
+                if (killedPiece.IsRoyal(opponentColor)) { killedOpponentKing = true; }
             }
 
             if (move.enPassantSquares != null)
@@ -157,8 +157,17 @@ public class ChessBoard
 
 
         if(isCapture && rules.atomic){
-            var kingDead = ExplodePiece(toX,toY,opponentColor);
-            if(kingDead){killedKing = true;}
+            var killedPieces = ExplodePiece(toX,toY,opponentColor);
+            var killedKings = KilledKings(killedPieces);
+            if(killedKings.Contains(turn)){
+                if (temporary)
+                {
+                    turn = (turn == 0) ? 1 : 0;
+                    return 1;
+                }
+            }else if(killedKings.Contains(opponentColor) || killedKings.Contains(-1)){
+                killedOpponentKing = true;
+            }
         }
 
 
@@ -174,12 +183,8 @@ public class ChessBoard
             if(CanPromote(toX, toY, turn, rank)){
                 var promotesTo = rules.promotePiece;
 
-                if(turn == 0){
-                    piece.pieceMovement[turn] = Pieces.whitePieces[promotesTo];
-                }else
-                {
-                    piece.pieceMovement[turn] = Pieces.blackPieces[promotesTo];
-                }
+                piece.PromotePiece(turn,promotesTo);
+
                 piece.pieceString[turn] = promotesTo;
             }
         }
@@ -198,8 +203,9 @@ public class ChessBoard
         PageClass.RefreshBoard();
 
         int gameEnd;
-        if (killedKing)
+        if (killedOpponentKing)
         {
+            // The one that played the last turn wins
             gameEnd = turn;
         }
         else
@@ -240,6 +246,9 @@ public class ChessBoard
         return gameEnd;
     }
 
+    /// <summary>
+    /// Checks if the piece can promote
+    /// </summary>
     bool CanPromote(int x, int y, int color, int rank){
         //rules.promoteZone == -1 && rank == boardSize[1]
         if(rules.promoteZone == -1 && rank == boardSize[1]){
@@ -254,6 +263,14 @@ public class ChessBoard
     }
 
 
+    /// <summary>
+    /// Checks the legality of castling by cloning the king through all squares it can move to while castling.
+    /// </summary>
+    /// <param name="fromX">The starting x-coordinate of the king.</param>
+    /// <param name="fromY">The starting y-coordinate of the king.</param>
+    /// <param name="toX">The destination x-coordinate of the king.</param>
+    /// <param name="toY">The destination y-coordinate of the king.</param>
+    /// <param name="piece">The king piece.</param>
     void CastlingLegalityCheck(int fromX, int fromY, int toX, int toY, Piece piece){
         var x = fromX;
         var y = fromY;
@@ -273,6 +290,22 @@ public class ChessBoard
                 y--;
             }
         }
+    }
+
+    /// <summary>
+    /// Returns a list of the colors of the kings that were killed in the game.
+    /// </summary>
+    /// <param name="killedPieces">List of pieces that were killed in the game.</param>
+    /// <returns>List of the colors of the kings that were killed in the game.</returns>
+    public List<int> KilledKings(List<Piece> killedPieces){
+        var returnVal = new List<int>();
+        foreach (var item in killedPieces)
+        {
+            if(item.IsRoyalAnyTeam()){
+                returnVal.Add(item.color);
+            }
+        }
+        return returnVal;
     }
 
     /// <summary>
@@ -328,9 +361,10 @@ public class ChessBoard
             return true;
         }
     }
-    bool ExplodePiece(int xCoord, int yCoord, int color)
+    //Explode the piece and returns all killed pieces
+    List<Piece> ExplodePiece(int xCoord, int yCoord, int color)
     {
-        bool returnVal = false;
+        List<Piece> killedPieces = new();
         for (var x = xCoord - 1; x <= xCoord + 1; x++)
         {
             if (x < 0 || x >= boardSize[0])
@@ -339,21 +373,19 @@ public class ChessBoard
             }
             for (var y = yCoord - 1; y <= yCoord + 1; y++)
             {
-                if (y < 0 || y >= boardSize[1])
+                if (y < 0 || y >= boardSize[1] || (xCoord,yCoord) == (x,y))
                 {
                     continue;
                 }
                 if (board[x, y] != null && !board[x, y].IsBlastResistant())
                 {
-                    var result = DeletePiece(x, y, color);
-                    if (result == true)
-                    {
-                        returnVal = true;
-                    }
+                    var killedPiece = DeletePiece(x, y, color);
+                    killedPieces.Add(killedPiece);
                 }
             }
         }
-        return returnVal;
+        DeletePiece(xCoord, yCoord, color);
+        return killedPieces;
     }
     void AddEnPassantSquare((int, int) square)
     {
@@ -380,14 +412,10 @@ public class ChessBoard
     }
 
     // Deletes piece from every portal location
-    // Returns true if the piece deleted was royal
-    bool DeletePiece(int x, int y, int color)
+    // Returns the killed piece
+    Piece DeletePiece(int x, int y, int color)
     {
-        bool returnVal = false;
-        if (board[x, y] != null && board[x, y].IsRoyal(color))
-        {
-            returnVal = true;
-        }
+        var killedPiece = board[x,y];
         board[x, y] = null;
         if (portals[x, y] != null)
         {
@@ -396,7 +424,7 @@ public class ChessBoard
                 board[item[0], item[1]] = null;
             }
         }
-        return returnVal;
+        return killedPiece;
     }
     void SetPosition(string betterFEN, int[] boardSize)
     {

@@ -8,3 +8,8 @@ public class AAA
         this.a = a;
     }
 }
+
+public static class CrossPage
+{
+    public static string activeGameMode = null;
+}

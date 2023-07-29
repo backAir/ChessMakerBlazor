@@ -24,13 +24,13 @@ public static class SharedFunctions
                 {
                     if (board.board[x, y].color != -1)
                     {
-                        boardPNGs[x, y, 0] = Globals.basePath + "images/" + board.board[x, y].GetSprite(board.board[x, y].color) + ((board.board[x, y].color == 0) ? "w" : "b") + ".png";
+                        boardPNGs[x, y, 0] = Globals.basePath + "images/" + board.board[x, y].GetSprite(board.board[x, y].color) + ((board.board[x, y].color == 0) ? "w" : "b") + ".png?1";
                         boardPNGs[x, y, 1] = null;
                     }
                     else
                     {
-                        boardPNGs[x, y, 0] = Globals.basePath + "images/" + board.board[x, y].GetSprite(0) + "w.png";
-                        boardPNGs[x, y, 1] = Globals.basePath + "images/" + board.board[x, y].GetSprite(1) + "b.png";
+                        boardPNGs[x, y, 0] = Globals.basePath + "images/" + board.board[x, y].GetSprite(0) + "w.png?1";
+                        boardPNGs[x, y, 1] = Globals.basePath + "images/" + board.board[x, y].GetSprite(1) + "b.png?1";
                     }
                 }
                 else

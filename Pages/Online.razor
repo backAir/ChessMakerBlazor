@@ -60,6 +60,13 @@
 
     protected override void OnInitialized(){
 
+        if(CrossPage.activeGameMode != null){
+            gameMode = CrossPage.activeGameMode;
+            CrossPage.activeGameMode = null;
+            StartGame();
+            return;
+        }
+
         @* localStorage.SetItem("name", "John Smith");
         var name = localStorage.GetItem<string>("name"); *@
         

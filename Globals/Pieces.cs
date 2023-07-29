@@ -64,6 +64,19 @@ public class Piece
 
 
     }
+
+    public void PromotePiece(int color, string piece){
+        if(color == 0){
+            pieceMovement[color] = Pieces.whitePieces[piece];
+        }else
+        {
+            pieceMovement[color] = Pieces.blackPieces[piece];
+        }
+        pieceString[color] = piece;
+        canBeUsedToCastle[color] = pieceMovement[color].canBeUsedToCastle;
+        blastResistant[color] = pieceMovement[color].blastResistant;
+
+    }
     public bool IsBlastResistant(){
         if(color == -1){
             for (var i = 0; i < blastResistant.Length; i++){

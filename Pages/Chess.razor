@@ -64,9 +64,10 @@
         }
 
         
-        
         @* Side UI *@
+        @if(!gameStarted && !online){
         <div class="side-ui">
+
             @code{
                 string focused = "tab-focused";
                 bool isChecked = true;
@@ -130,20 +131,38 @@
             
             @* Start Game DIV *@
             <div class="StartGame">
-                <button class="StartGame-button" @onclick="()=>{}">
+                <button class="StartGame-button" @onclick="()=>{StartGameLocal();}">
                     <h2>Play locally</h2>
                 </button>
-                <button class="StartGame-button" @onclick="()=>{}">
+                <button class="StartGame-button" @onclick="()=>{StartGameOnline();}">
                     <h2>Play online</h2>
                 </button>
             </div>
+
         </div>
+        }else if(!online){
+            <div class="LocalGame">
+                <button class="StartGame-button" @onclick="()=>{gameStarted = false;}">
+                    <h2>Stop Game</h2>
+                </button>
+            </div>
+        }
+        
 
     </div>
 </div>
 
 @code{
 
+    void StartGameLocal(){
+        gameStarted = true;
+        SetGamemode(activeGameMode);
+    }
+
+    void StartGameOnline(){
+        CrossPage.activeGameMode = activeGameMode;
+        NavigationManager.NavigateTo("/online");
+    }
 
     public enum Tabs{
         presets,
@@ -152,10 +171,10 @@
 
     public async Task CopyToClipboard()
     {
-        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", NavigationManager.Uri.Replace("https://",""));
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", NavigationManager.Uri);
     }
 
-
+    public bool gameStarted = false;
 
     public Tabs tabSelected = new Tabs();
 
@@ -272,6 +291,10 @@
         if(chessBoard != null){
             Debug.Log("all moves Client: "+chessBoard.allMoves.Count);
             Debug.Log("all moves Server: "+args.allMoves.Count);
+            if(chessBoard.allMoves.Count<args.allMoves.Count){
+                var move = args.allMoves[args.allMoves.Count-1];
+                MovePiece(move[0][0],move[0][1],move[1][0],move[1][1]);
+            }
             return;
         }
 
@@ -307,6 +330,7 @@
             Debug.Log("SetGamemode: "+gameMode);
         }
 
+        activeGameMode = gameMode;
         if(gameMode == "Hex Chess"){
             boardType = 1;
         }else
@@ -315,11 +339,11 @@
         }
         selectedSquares = new List<(int,int)>();
         chessBoard = new ChessBoard(gameMode);//Everything,Classic
-        
         PiecesImgs = new string[chessBoard.boardSize[0],chessBoard.boardSize[1],2];
         SquareState = new byte[chessBoard.boardSize[0],chessBoard.boardSize[1]];
 
         Portals = SharedFunctions.GetRenderedPortals(chessBoard);
+        
         RefreshBoard();
     }
 
