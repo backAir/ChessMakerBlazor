@@ -10,10 +10,6 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-@* @if(webSocket!=null){
-    <h3>State: @webSocket.State</h3>
-} *@
-
 
 <ChessCSS chessBoard="@chessBoard"/>
 
@@ -80,9 +76,9 @@
                 <div class="tab @(tabSelected == Tabs.presets? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.presets);}">
                     Presets
                 </div>
-                <div class="tab @(tabSelected == Tabs.ruleset? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.ruleset);}">
+                @* <div class="tab @(tabSelected == Tabs.ruleset? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.ruleset);}">
                     Rules
-                </div>
+                </div> *@
             </div>
 
             <div class="customisation">
@@ -214,7 +210,8 @@
 
         // ptn de canadiens ces jours
         if(!online){
-            SetGamemode("Mini Chess");
+            // get first element of the dictionnary
+            SetGamemode(GamemodeList.GameModes.First().Key);
             canMove = true;
             return;
         }
@@ -404,6 +401,10 @@
         selectedSquare[1] = y;
         SquareState[x,y] = 1;
         selectedSquares.Add((x,y));
+
+        if(chessBoard.legalMoves[x,y] == null){
+            return;
+        }
         foreach (var item in chessBoard.legalMoves[x,y])
         {
             if(chessBoard.board[item.Key.Item1,item.Key.Item2] == null){

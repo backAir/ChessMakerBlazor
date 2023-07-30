@@ -34,12 +34,15 @@ public static class Pieces
         {"CP",new PieceMovement(
             moveJumpVal: new int[][]{new int[]{1,1},new int[]{-1,1}},
             checkersAttackVal: new bool[]{false,false,false,false,true,true,false,false},
-            canPromoteVal: 1)},
+            canPromoteVal: 1,
+            chainCapturesVal: true)},
         //checkers king
         {"CK",new PieceMovement(
             moveJumpVal: new int[][]{new int[]{1,1},new int[]{-1,1},new int[]{1,-1},new int[]{-1,-1}},
             checkersAttackVal: new bool[]{false,false,false,false,true,true,true,true},
-            canPromoteVal: 1)},
+            canPromoteVal: 1,
+            chainCapturesVal: true)},
+            
         //& nothing
         //*Statue (does nothing)
         {"ST",new PieceMovement(

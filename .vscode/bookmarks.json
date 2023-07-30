@@ -24,17 +24,17 @@
 					"label": "side ui"
 				},
 				{
-					"line": 326,
+					"line": 327,
 					"column": 16,
 					"label": "create game"
 				},
 				{
-					"line": 349,
+					"line": 350,
 					"column": 13,
 					"label": "board actions"
 				},
 				{
-					"line": 455,
+					"line": 460,
 					"column": 9,
 					"label": "drag and drop"
 				}

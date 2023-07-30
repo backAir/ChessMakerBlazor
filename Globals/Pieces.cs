@@ -153,6 +153,7 @@ public class PieceMovement
     public bool canBeUsedToCastle;
     public List<string> moveTypes;
     public bool blastResistant;
+    public bool chainCaptures = false;
     public PieceMovement Clone()
     {
         var newAttack = attackLine == null ? null : attackLine.Clone() as bool[];
@@ -167,7 +168,8 @@ public class PieceMovement
         var newCanBeUsedToCastle = canBeUsedToCastle;
         var newBlastResistant = blastResistant;
         var newCanbeCaptured = canBeCaptured;
-        return new PieceMovement(newAttack, newMove, newAttackJump, newMoveJump, newInitialMove, enPassant, canPromote, newCheckersAttack, newcheckersQueenAttack, newCastling, newJump, newCanBeUsedToCastle, newBlastResistant, newCanbeCaptured);
+        var newChainCaptures = chainCaptures;
+        return new PieceMovement(newAttack, newMove, newAttackJump, newMoveJump, newInitialMove, enPassant, canPromote, newCheckersAttack, newcheckersQueenAttack, newCastling, newJump, newCanBeUsedToCastle, newBlastResistant, newCanbeCaptured, newChainCaptures);
     }
 
     // Clone for the fake boards (removes non attacking moves better for legal move calc)
@@ -183,13 +185,32 @@ public class PieceMovement
         var newInitialMove = null as Dictionary<int[], int[][]>;
         var newCastling = castling == null ? null : castling.Clone() as int[];
         var newCanBeUsedToCastle = canBeUsedToCastle;
-        return new PieceMovement(newAttack, newMove, newAttackJump, newMoveJump, newInitialMove, enPassant, canPromote, newCheckersAttack, newcheckersQueenAttack, newCastling, newJump, newCanBeUsedToCastle, blastResistant);
+        var newChainCaptures = chainCaptures;
+        return new PieceMovement(newAttack, newMove, newAttackJump, newMoveJump, newInitialMove, enPassant, canPromote, newCheckersAttack, newcheckersQueenAttack, newCastling, newJump, newCanBeUsedToCastle, blastResistant, canBeCaptured,newChainCaptures);
+    }
+
+    public PieceMovement CreateOpposite()
+    {
+        var newAttack = CreateOpposite(attackLine);
+        var newMove = CreateOpposite(moveLine);
+        var newAttackJump = CreateOpposite(attackJump);
+        var newMoveJump = CreateOpposite(moveJump);
+        var newJump = CreateOpposite(allJump);
+        var newInitialMove = CreateOpposite(initialMove);
+        var newCheckersAttack = CreateOpposite(checkersAttack);
+        var newcheckersQueenAttack = CreateOpposite(checkersQueenAttack);
+        var newCastling = castling;
+        var newCanBeUsedToCastle = canBeUsedToCastle;
+        var newBlastResistant = blastResistant;
+        var newCanbeCaptured = canBeCaptured;
+        var newChainCaptures = chainCaptures;
+        return new PieceMovement(newAttack, newMove, newAttackJump, newMoveJump, newInitialMove, enPassant, canPromote, newCheckersAttack, newcheckersQueenAttack, newCastling, newJump, newCanBeUsedToCastle, newBlastResistant, newCanbeCaptured, newChainCaptures);
     }
 
 
     public PieceMovement(bool[] attackVal = null, bool[] moveVal = null, int[][] attackJumpVal = null, int[][] moveJumpVal = null, Dictionary<int[], int[][]> initialMoveVal = null, bool enPassantVal = false,
             byte canPromoteVal = 0, bool[] checkersAttackVal = null, bool[] checkersQueenAttackVal = null, int[] castlingVal = null, int[][] jumpVal = null,
-            bool canBeUsedToCastleVal = false, bool blastResistantVal = false, bool canBeCapturedVal = true)
+            bool canBeUsedToCastleVal = false, bool blastResistantVal = false, bool canBeCapturedVal = true, bool chainCapturesVal = false)
     {
         attackLine = attackVal;
         moveLine = moveVal;
@@ -205,6 +226,7 @@ public class PieceMovement
         canBeUsedToCastle = canBeUsedToCastleVal;
         blastResistant = blastResistantVal;
         canBeCaptured = canBeCapturedVal;
+        chainCaptures = chainCapturesVal;
         FinishPiece();
     }
     public PieceMovement(bool[] lineVal = null, int[][] allJumpVal = null, Dictionary<int[], int[][]> initialMoveVal = null, bool enPassantVal = false, int[] castlingVal = null, bool canBeUsedToCastleVal = false)
@@ -282,22 +304,7 @@ public class PieceMovement
         this.moveTypes = tempMoveTypes;
     }
 
-    public PieceMovement CreateOpposite()
-    {
-        var newAttack = CreateOpposite(attackLine);
-        var newMove = CreateOpposite(moveLine);
-        var newAttackJump = CreateOpposite(attackJump);
-        var newMoveJump = CreateOpposite(moveJump);
-        var newJump = CreateOpposite(allJump);
-        var newInitialMove = CreateOpposite(initialMove);
-        var newCheckersAttack = CreateOpposite(checkersAttack);
-        var newcheckersQueenAttack = CreateOpposite(checkersQueenAttack);
-        var newCastling = castling;
-        var newCanBeUsedToCastle = canBeUsedToCastle;
-        var newBlastResistant = blastResistant;
-        var newCanbeCaptured = canBeCaptured;
-        return new PieceMovement(newAttack, newMove, newAttackJump, newMoveJump, newInitialMove, enPassant, canPromote, newCheckersAttack, newcheckersQueenAttack, newCastling, newJump, newCanBeUsedToCastle, newBlastResistant, newCanbeCaptured);
-    }
+
 
 
     bool[] CreateOpposite(bool[] old)

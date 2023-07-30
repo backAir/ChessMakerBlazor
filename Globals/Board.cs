@@ -112,6 +112,9 @@ public class ChessBoard
         var opponentColor = (turn == 0) ? 1 : 0;
 
         var killedOpponentKing = false;
+
+        List<Piece> killedPieces = new();
+
         DeletePiece(fromX, fromY, opponentColor);
         if (portals[toX, toY] != null)
         {
@@ -128,6 +131,7 @@ public class ChessBoard
             if (move.capturedPiece != null)
             {
                 var killedPiece = DeletePiece(move.capturedPiece[0], move.capturedPiece[1], opponentColor);
+                killedPieces.Add(killedPiece);
                 if (killedPiece.IsRoyal(opponentColor)) { killedOpponentKing = true; }
             }
 
@@ -153,21 +157,33 @@ public class ChessBoard
             }
         }
 
+
+        if(board[toX,toY] != null){
+             killedPieces.Add(board[toX,toY]);
+        }
+
         PutPiece(toX, toY, piece);
 
 
         if(isCapture && rules.atomic){
-            var killedPieces = ExplodePiece(toX,toY,opponentColor);
-            var killedKings = KilledKings(killedPieces);
-            if(killedKings.Contains(turn)){
-                if (temporary)
-                {
-                    turn = (turn == 0) ? 1 : 0;
-                    return 1;
-                }
-            }else if(killedKings.Contains(opponentColor) || killedKings.Contains(-1)){
-                killedOpponentKing = true;
+            var explodedPieces = ExplodePiece(toX,toY,opponentColor);
+            foreach (var item in explodedPieces)
+            {
+                killedPieces.Add(item);
             }
+        }
+
+
+
+        var killedKings = KilledKings(killedPieces);
+        if(killedKings.Contains(turn)){
+            if (temporary)
+            {
+                turn = (turn == 0) ? 1 : 0;
+                return 1;
+            }
+        }else if(killedKings.Contains(opponentColor) || killedKings.Contains(-1)){
+            killedOpponentKing = true;
         }
 
 
@@ -189,7 +205,25 @@ public class ChessBoard
             }
         }
 
-        turn = (turn == 0) ? 1 : 0;
+        
+        bool chainCapture = isCapture && piece.pieceMovement[turn].chainCaptures;
+        if(chainCapture){
+            var forcedCaptureFound = true;
+            var fakeAllMoves = new Dictionary<(int, int), MoveProperties>[boardSize[0], boardSize[1]];
+            var tempLegalMoves = Movement.GetPseudoMoves(this, toX, toY, turn, ref forcedCaptureFound, ref fakeAllMoves);
+            if(tempLegalMoves.Count>0){
+                fakeAllMoves[toX,toY] = tempLegalMoves;
+                legalMoves = fakeAllMoves;
+            }else
+            {
+                chainCapture = false;
+            }
+        }
+
+        if(!chainCapture){
+            turn = (turn == 0) ? 1 : 0;
+        }
+        
 
 
         //^ Removes castling privilege of the piece
@@ -210,14 +244,16 @@ public class ChessBoard
         }
         else
         {
-            var pseudoLegalMoves = Movement.GetAllPseudoLegalMoves(this);
-            if (rules.checkMate)
-            {
-                legalMoves = Movement.GetAllLegalMoves(this, pseudoLegalMoves);
-            }
-            else
-            {
-                legalMoves = pseudoLegalMoves;
+            if(!chainCapture){
+                var pseudoLegalMoves = Movement.GetAllPseudoLegalMoves(this);
+                if (rules.checkMate)
+                {
+                    legalMoves = Movement.GetAllLegalMoves(this, pseudoLegalMoves);
+                }
+                else
+                {
+                    legalMoves = pseudoLegalMoves;
+                }
             }
             gameEnd = CheckGameEnd();
         }
@@ -320,18 +356,25 @@ public class ChessBoard
     int CheckGameEnd()
     {
 
+        var pieceExist = false;
         for (var x = 0; x < boardSize[0]; x++)
         {
             for (var y = 0; y < boardSize[1]; y++)
             {
+                if(board[x,y] == null){
+                    continue;
+                }
                 if (legalMoves[x, y] != null && legalMoves[x, y].Count() > 0)
                 {
                     return 0;
                 }
+                if(board[x,y].IsTeam(turn)){
+                    pieceExist = true;
+                }
             }
         }
         var otherTeam = turn == 0 ? 1 : 0;
-        if (Movement.IsKingUnderAttack(this, otherTeam))
+        if (!pieceExist || Movement.IsKingUnderAttack(this, otherTeam))
         {
             return otherTeam + 1;
         }

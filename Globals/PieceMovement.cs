@@ -9,6 +9,9 @@ public static class Movement
     public static Dictionary<(int, int), MoveProperties>[,] GetAllLegalMoves(ChessBoard chessBoard, Dictionary<(int, int),
         MoveProperties>[,] pseudoLegalMoves)
     {
+        if(!chessBoard.rules.kingInCheck){
+            return pseudoLegalMoves;
+        }
         var legalMoves = new Dictionary<(int, int), MoveProperties>[chessBoard.boardSize[0], chessBoard.boardSize[1]];
         for (var x = 0; x < pseudoLegalMoves.GetLength(0); x++)
         {
@@ -106,6 +109,7 @@ public static class Movement
     public static Dictionary<(int, int), MoveProperties>[,] GetAllPseudoLegalMoves(ChessBoard chessBoard)
     {
         var allMoves = new Dictionary<(int, int), MoveProperties>[chessBoard.boardSize[0], chessBoard.boardSize[1]];
+        bool forcedCaptureFound = false; // Set to true if a force capture is found (exemple checkers pieces)
         for (int x = 0; x < chessBoard.boardSize[0]; x++)
         {
             for (int y = 0; y < chessBoard.boardSize[1]; y++)
@@ -113,14 +117,19 @@ public static class Movement
                 // Checks if there's a piece of the active team on the square [x,y]
                 if (chessBoard.board[x, y] != null && chessBoard.board[x, y].IsTeam(chessBoard.turn))
                 {
-                    allMoves[x, y] = GetPseudoMoves(chessBoard, x, y, chessBoard.turn);
+                    var chainCapture = chessBoard.board[x, y].pieceMovement[chessBoard.turn].chainCaptures;
+                    if(forcedCaptureFound && !chainCapture){
+                        continue;
+                    }
+                    var moves = GetPseudoMoves(chessBoard, x, y, chessBoard.turn, ref forcedCaptureFound, ref allMoves);
+                    allMoves[x, y] = moves;
                 }
             }
         }
         return allMoves;
     }
 
-    static Dictionary<(int, int), MoveProperties> GetPseudoMoves(ChessBoard chessBoard, int x, int y, int color)
+    public static Dictionary<(int, int), MoveProperties> GetPseudoMoves(ChessBoard chessBoard, int x, int y, int color, ref bool forcedCaptureFound, ref Dictionary<(int, int), MoveProperties>[,] allMoves)
     {
 
         var moves = new Dictionary<(int, int), MoveProperties>();
@@ -149,6 +158,42 @@ public static class Movement
                     break;
             }
         }
+
+        if(!forcedCaptureFound && piece.chainCaptures){
+            var captureMoves = new Dictionary<(int, int), MoveProperties>();
+            foreach (var item in moves)
+            {
+                var destX = item.Key.Item1;
+                var destY = item.Key.Item2;
+                if(chessBoard.board[destX,destY] != null || item.Value.capturedPiece != null){
+                    forcedCaptureFound = true;
+                    captureMoves.Add(item.Key,item.Value);
+                    continue;
+                }
+            }
+
+            if(forcedCaptureFound){
+                allMoves = new Dictionary<(int, int), MoveProperties>[chessBoard.boardSize[0], chessBoard.boardSize[1]];
+                return captureMoves;
+            }
+        }
+
+        if(forcedCaptureFound){
+            var captureMoves = new Dictionary<(int, int), MoveProperties>();
+            foreach (var item in moves)
+            {
+                var destX = item.Key.Item1;
+                var destY = item.Key.Item2;
+                if(chessBoard.board[destX,destY] != null || item.Value.capturedPiece != null){
+                    captureMoves.Add(item.Key,item.Value);
+                    continue;
+                }
+            }
+            return captureMoves;
+        }
+
+
+
         return moves;
     }
 

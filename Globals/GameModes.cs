@@ -27,6 +27,7 @@ public class Rules
     public bool checkMate = true; // if disabled you need to kill a royal piece to win instead of checkmating it 
     public bool atomic = false;
     public bool infiniteCastling = false; // if enabled the king never looses castling rights
+    public bool kingInCheck = true;
     public bool kingCanCastleAnything = false;
     public int promoteZone = -1;
     public List<(int,int)>[] promotionSquares = null;
@@ -40,7 +41,8 @@ public class Rules
 public static class GamemodeList
 {
     public static Dictionary<string,string> GameModes = new Dictionary<string,string>{
-        {"castlingTest","test"},
+        // {"castlingTest","test"},
+        {"Checkers Pawns","Pawns are checkers pieces"},
         {"Mini Chess","Tiny board"},
         {"Hex Chess","Hexagon board"},
         {"Everything","Chaos"},
@@ -94,6 +96,20 @@ public static class GamemodeList
                 boardSize = new int[2] { 8, 8 };
                 BetterFen = true;
                 break;
+            
+            case "Checkers Pawns":
+                FEN = @"
+                R:b,N:b,B:b,Q:b,K:rb,B:b,N:b,R:b/
+                CP:b,CP:b,CP:b,CP:b,CP:b,CP:b,CP:b,CP:b/
+                8/8/8/8/
+                CP:w,CP:w,CP:w,CP:w,CP:w,CP:w,CP:w,CP:w/
+                R:w,N:w,B:w,Q:w,K:rw,B:w,N:w,R:w w - 0 1";
+                boardSize = new int[2] { 8, 8 };
+                BetterFen = true;
+                rules.promotePiece = "CK";
+                rules.kingInCheck = false;
+                break;
+
 
             case "why":
                 FEN = @"rnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrkbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbqrnbq/
