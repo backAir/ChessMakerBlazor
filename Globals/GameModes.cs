@@ -67,11 +67,10 @@ public static class GamemodeList
         var rules = new Rules();
         switch (gameMode)
         {
-            case "Everything Portal":
             case "Everything":
                 FEN = @"R:b,N:b,B:b,AB:b,Q:b:,K:br,KN:b,B:b,N:b,R:b/
                 P:b,P:b,BP:b,P:b,P:b,CP:b,P:b,BP:b,P:b,P:b/
-                10/10/R:b&B:w,8,R:w&B:b/10/10/
+                10/10/R:b&B:w,ST:w,6,ST:w,R:w&B:b/10/10/
                 P:w,P:w,BP:w,P:w,P:w,CP:w,P:w,BP:w,P:w,P:w/
                 R:w,N:w,B:w,AB:w,Q:w,K:wr,KN:w,B:w,N:w,R:w w - 0 1";
                 boardSize = new int[2] { 10, 9 };

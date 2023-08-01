@@ -4,37 +4,37 @@
 			"path": "Pages/Chess.razor",
 			"bookmarks": [
 				{
-					"line": 37,
+					"line": 36,
 					"column": 21,
 					"label": "chessboard"
 				},
 				{
-					"line": 42,
+					"line": 41,
 					"column": 18,
 					"label": "hex chessboard"
 				},
 				{
-					"line": 52,
+					"line": 51,
 					"column": 24,
 					"label": "online waiting ui"
 				},
 				{
-					"line": 66,
+					"line": 65,
 					"column": 18,
 					"label": "side ui"
 				},
 				{
-					"line": 327,
+					"line": 329,
 					"column": 16,
 					"label": "create game"
 				},
 				{
-					"line": 350,
+					"line": 352,
 					"column": 13,
 					"label": "board actions"
 				},
 				{
-					"line": 460,
+					"line": 468,
 					"column": 9,
 					"label": "drag and drop"
 				}

@@ -14,32 +14,31 @@
 <ChessCSS chessBoard="@chessBoard"/>
 
 <div class="vertical-flex-container">
-    <div>
-        <div class="">
-            @if(chessBoard != null && chessBoard.gameOver){
-                <p role="Game Over"> game over: @(chessBoard.winnerText)</p>
-            }
-        </div>
-    </div>
-
-
-    @* <button onclick="document.getElementById('sound').play()">Play through Javascript</button> *@
-
-    
 
     <div class="flex-container">
         
         @if(chessBoard != null){
             <div class="flex1 resizeable">
-            @* Chessboard *@
-            @if(boardType == 0){
-                <ChessBoardUi Chess="@this"></ChessBoardUi>
-            }
-            
-            @* Hex Chessboard *@
-            @if(boardType == 1){
-                <HexBoardUi Chess="@this"></HexBoardUi>
-            }
+                @if(chessBoard != null && chessBoard.gameOver && !chessBoard.closedEndGameBox){
+                    <div class="endGame">
+                        @* ui for when a chess game ended *@
+                        <div class="endGameText"> @chessBoard.winnerText </div>
+                        
+                        <button class="endGame-button" @onclick="()=>{chessBoard.closedEndGameBox = true;}">
+                            <h2>ok</h2>
+                        </button>
+
+                    </div>
+                }
+                @* Chessboard *@
+                @if(boardType == 0){
+                    <ChessBoardUi Chess="@this"></ChessBoardUi>
+                }
+                
+                @* Hex Chessboard *@
+                @if(boardType == 1){
+                    <HexBoardUi Chess="@this"></HexBoardUi>
+                }
             </div>
 
         }else
@@ -78,15 +77,15 @@
                 </div>
                 @* <div class="tab @(tabSelected == Tabs.ruleset? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.ruleset);}">
                     Rules
+                </div>
+                <div class="tab @(tabSelected == Tabs.position? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.position);}">
+                    Position
                 </div> *@
             </div>
 
             <div class="customisation">
 
                 @if(tabSelected == Tabs.presets){
-                    @* <div>
-                        <center><h1> Select the gamemode: </h1></center>
-                    </div> *@
                     <br>
                     @* GameMode selection screen *@
                     <div class="customisation-content"> 
@@ -106,22 +105,21 @@
                 }
                 
                 @if(tabSelected == Tabs.ruleset){
+                    <Rules Chess="@this"/>
+                }
 
-                    <div class="customisation-content"> 
-
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox" class="ui-checkbox" @bind="@chessBoard.rules.atomic">
-                            <span class="checkbox-text">Atomic</span>
-                        </label>
-
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox" class="ui-checkbox" @bind="@chessBoard.rules.kingCanCastleAnything">
-                            <span class="checkbox-text">king Can Castle Anything</span>
-                        </label>
-
+                @if(tabSelected == Tabs.position){
+                    <div class="pieces-menu">
+                        @foreach(var item in Pieces.whitePieces){
+                            if(item.Key == "HK"){
+                                break;
+                            }
+                            <div class="piece-menu-piece">
+                                <img src=@SharedFunctions.GetPiecePng(item.Key, 0) class="pieces-menu-image" />
+                            </div>
+                        }
                     </div>
                 }
-                
 
             </div>
             
@@ -162,7 +160,8 @@
 
     public enum Tabs{
         presets,
-        ruleset
+        ruleset,
+        position
     }
 
     public async Task CopyToClipboard()
@@ -323,6 +322,9 @@
 
     // Create game
     public void SetGamemode(string gameMode, bool online = false){
+        if(chessBoard != null){
+            DeselectSquare();
+        }
         if(online){
             Debug.Log("SetGamemode: "+gameMode);
         }
@@ -385,13 +387,19 @@
             }
         }
     }
+
+    public enum Sound​{
+        Move,
+        Capture
+    }
+    public async void PlaySound(Sound sound){
+        await JSRuntime.InvokeVoidAsync("playSound",sound.ToString());
+    }
     public void MovePiece(int fromX, int fromY, int toX, int toY, bool sendToServer = true){
         chessBoard.MovePiece(fromX, fromY, toX, toY, this);
         if(online && sendToServer){
             var move = new SendMoveArgs(new int[]{fromX, fromY}, new int[]{toX,toY},onlineGameID, chessBoard.actionsMade);
             client.SendMove(move);
-            
-            @* await client.SendMessageAsync(JsonConvert.SerializeObject(move)); *@
         }
     }
 

@@ -6,3 +6,7 @@ function hello(name) {
 function copyToClipboard (text) {
     navigator.clipboard.writeText(text);
 }
+
+function playSound (text) {
+    document.getElementById(text).play();
+}

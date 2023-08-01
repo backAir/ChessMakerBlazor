@@ -1,0 +1,19 @@
+<div class="customisation-content"> 
+
+    <label class="checkbox-wrapper">
+        <input type="checkbox" class="ui-checkbox" @bind="@Chess.chessBoard.rules.atomic">
+        <span class="checkbox-text">Atomic</span>
+    </label>
+
+    <label class="checkbox-wrapper">
+        <input type="checkbox" class="ui-checkbox" @bind="@Chess.chessBoard.rules.kingCanCastleAnything">
+        <span class="checkbox-text">king Can Castle Anything</span>
+    </label>
+
+</div>
+
+
+@code{
+    [Parameter]
+    public Chess Chess {get; set;}
+}

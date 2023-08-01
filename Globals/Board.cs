@@ -1,4 +1,7 @@
+using System.Globalization;
 using System.Net;
+using MyApplication.Pages;
+
 public class ChessBoard
 {
     //^ Legal moves
@@ -19,6 +22,7 @@ public class ChessBoard
     bool temporary = false;
     public Rules rules;
     public bool gameOver = false;
+    public bool closedEndGameBox = false;
     public string winnerText;
     public int winner = -1;
     public ChessBoard Clone()
@@ -99,6 +103,12 @@ public class ChessBoard
         allMoves.Add(new int[,] { { fromX, fromY }, { toX, toY } });
 
         bool isCapture = IsCapture(fromX, fromY, toX, toY);
+
+
+        if(!temporary){
+            var sound = isCapture ? Chess.Sound.Capture : Chess.Sound.Move;
+            PageClass.PlaySound(sound);
+        }
 
         // prevents the king from moving in atomic chess
         if (temporary && rules.atomic && board[fromX, fromY].IsRoyal(turn) && isCapture)
@@ -220,6 +230,8 @@ public class ChessBoard
             }
         }
 
+        var turnPlayed = turn;
+
         if(!chainCapture){
             turn = (turn == 0) ? 1 : 0;
         }
@@ -240,7 +252,7 @@ public class ChessBoard
         if (killedOpponentKing)
         {
             // The one that played the last turn wins
-            gameEnd = turn;
+            gameEnd = turnPlayed+1;
         }
         else
         {

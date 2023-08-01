@@ -14,6 +14,15 @@ public static class SharedFunctions
 {
     // clip-path: polygon(100% 0%,100% 100%,50% 100%,50% 0%);
     // clip-path: polygon(50% 0%,50% 100%,0% 100%,0% 0%);
+
+
+    public static string GetPiecePng(string piece, int color){
+        if(piece == "ST"){
+            return null;
+        }
+        return Globals.basePath + "images/" + piece + (color == 0? "w" : "b") + ".png";;
+    }
+
     public static void GetRenderedBoard(ChessBoard board, string[,,] boardPNGs)
     {
         for (int x = 0; x < board.boardSize[0]; x++)
@@ -24,7 +33,7 @@ public static class SharedFunctions
                 {
                     if (board.board[x, y].color != -1)
                     {
-                        boardPNGs[x, y, 0] = Globals.basePath + "images/" + board.board[x, y].GetSprite(board.board[x, y].color) + ((board.board[x, y].color == 0) ? "w" : "b") + ".png?1";
+                        boardPNGs[x, y, 0] = GetPiecePng(board.board[x, y].GetSprite(board.board[x, y].color),board.board[x, y].color);
                         boardPNGs[x, y, 1] = null;
                     }
                     else
