@@ -50,7 +50,7 @@
                     <h1> Game ID: @onlineGameID</h1>
 
                     <br>
-                    <p>link to join game: @NavigationManager.Uri.Replace("https://","")</p>
+                    <p>link to join game: @NavigationManager.Uri</p>
                     <br>
                     <button class="createGameButton" @onclick="CopyToClipboard">Copy link to clipbloard</button>
                 </div>
@@ -275,7 +275,12 @@
         if(chessBoard.CanMove(move.from[0], move.from[1], move.to[0], move.to[1]) && chessBoard.turn != onlineColor){
             MovePiece(move.from[0], move.from[1], move.to[0], move.to[1], false);
         }else{
-            
+            canMove = false;
+            chessBoard.winnerText = "Your opponent is trying to cheat ;)\nif you didn't cheat you win GG";
+            chessBoard.gameOver = true;
+            chessBoard.closedEndGameBox = false;
+            DeselectSquare();
+            RefreshBoard();
         }
         RefreshBoard();
     }
@@ -346,6 +351,17 @@
         RefreshBoard();
     }
 
+    // End game
+
+    public void GameCleaned(){
+        canMove = false;
+        chessBoard.winnerText = "Game timed out";
+        chessBoard.gameOver = true;
+        chessBoard.closedEndGameBox = false;
+        DeselectSquare();
+        RefreshBoard();
+    }
+    
     // Board actions
     public void ClickSquare(int x, int y){
         @* Debug.Log("clicked: "+x+"|"+y); *@
@@ -476,6 +492,9 @@
     
     }
 
+    public async Task Alert(string message){
+        await JSRuntime.InvokeVoidAsync("alert", message);
+    }
 
     public void DragEnter(int x, int y){
         dragSquare[0] = x;

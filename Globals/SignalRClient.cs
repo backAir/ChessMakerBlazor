@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using MudBlazor;
 
 
 public class SignalRClient
@@ -71,6 +72,12 @@ public class SignalRClient
         {
             Debug.Log("Reconnect");
             page.Reconnect(reconnectArgs);
+        });
+        
+        hub.On("GameCleaned", () => {
+            Debug.Log("GameCleaned");
+            page.GameCleaned();
+            // await page.Alert("Game got cleaned");
         });
 
         await hub.StartAsync();
