@@ -9,25 +9,31 @@
 @inject Blazored.LocalStorage.ISyncLocalStorageService localStorage
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
+@inject IToastService toastService;
+@using Blazored.Toast.Configuration
+
 
 
 <ChessCSS chessBoard="@chessBoard"/>
 
+                
 <div class="vertical-flex-container">
+
 
     <div class="flex-container">
         
         @if(chessBoard != null){
             <div class="flex1 resizeable">
                 @if(chessBoard != null && chessBoard.gameOver && !chessBoard.closedEndGameBox){
-                    <div class="endGame">
-                        @* ui for when a chess game ended *@
-                        <div class="endGameText"> @chessBoard.winnerText </div>
-                        
-                        <button class="endGame-button" @onclick="()=>{chessBoard.closedEndGameBox = true;}">
-                            <h2>ok</h2>
-                        </button>
-
+                    <div class="endGameContainer">
+                        <div class="endGame">
+                            @* ui for when a chess game ended *@
+                            <div class="endGameText"> @chessBoard.winnerText </div>
+                            
+                            <button class="endGame-button" @onclick="()=>{chessBoard.closedEndGameBox = true;}">
+                                <h2>ok</h2>
+                            </button>
+                        </div>
                     </div>
                 }
                 @* Chessboard *@
@@ -47,8 +53,15 @@
 
             @if(onlineGameID != -1){
                 <div>
-                    <h1> Game ID: @onlineGameID</h1>
-
+                    <BlazoredToasts Position="ToastPosition.TopLeft"
+                        Timeout="4"
+                        IconType="IconType.FontAwesome"
+                        SuccessClass="success-toast-override"
+                        SuccessIcon="fa fa-thumbs-up"
+                        ErrorIcon="fa fa-bug"
+                        ShowProgressBar="true" />
+                    @* <h1> Game ID: @onlineGameID</h1> *@
+                    <h1>Invite someone using the link below</h1>
                     <br>
                     <p>link to join game: @NavigationManager.Uri</p>
                     <br>
@@ -167,6 +180,7 @@
     public async Task CopyToClipboard()
     {
         await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", NavigationManager.Uri);
+        toastService.ShowInfo("Link copied to clipboard");
     }
 
     public bool gameStarted = false;
@@ -200,13 +214,14 @@
     int boardWidth = 400;
     public string onlineSessionID;
 
+
     // On initialized
     protected override async Task OnInitializedAsync()
     {
         #if !DEBUG
             debug = false;
         #endif
-
+        
         // ptn de canadiens ces jours
         if(!online){
             // get first element of the dictionnary
