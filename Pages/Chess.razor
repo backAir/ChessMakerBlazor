@@ -59,7 +59,8 @@
                         SuccessClass="success-toast-override"
                         SuccessIcon="fa fa-thumbs-up"
                         ErrorIcon="fa fa-bug"
-                        ShowProgressBar="true" />
+                        ShowProgressBar="true"
+                        MaxToastCount="5" />
                     @* <h1> Game ID: @onlineGameID</h1> *@
                     <h1>Invite someone using the link below</h1>
                     <br>
@@ -82,18 +83,19 @@
 
                 void SetTab(Tabs tab){
                     tabSelected = tab;
+                    SetGamemode(activeGameMode);
                 }
             }
             <div class="tabs">
                 <div class="tab @(tabSelected == Tabs.presets? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.presets);}">
                     Presets
                 </div>
-                @* <div class="tab @(tabSelected == Tabs.ruleset? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.ruleset);}">
+                <div class="tab @(tabSelected == Tabs.ruleset? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.ruleset);}">
                     Rules
                 </div>
-                <div class="tab @(tabSelected == Tabs.position? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.position);}">
-                    Position
-                </div> *@
+                <div class="tab @(tabSelected == Tabs.custom? @focused : '\0' )" @onclick="()=>{SetTab(Tabs.custom);}">
+                    Custom
+                </div>
             </div>
 
             <div class="customisation">
@@ -105,6 +107,10 @@
                         
                         @* Create a div for each gamemode *@
                         @if(!online){
+                            @* <button class="gameMode-button" @onclick="()=>{SetGamemode("nothing");}">
+                                <h2>CUSTOM</h2>
+                                <p>your own creation</p>
+                            </button> *@
                             @foreach (var item in GamemodeList.GameModes)
                             {
                                 <button class="gameMode-button" @onclick="()=>{SetGamemode(item.Key);}">
@@ -121,9 +127,10 @@
                     <Rules Chess="@this"/>
                 }
 
-                @if(tabSelected == Tabs.position){
+                @if(tabSelected == Tabs.custom){
                     <div class="pieces-menu">
                         @foreach(var item in Pieces.whitePieces){
+                            if(item.Key == "")
                             if(item.Key == "HK"){
                                 break;
                             }
@@ -174,7 +181,7 @@
     public enum Tabs{
         presets,
         ruleset,
-        position
+        custom
     }
 
     public async Task CopyToClipboard()
@@ -436,6 +443,11 @@
 
     public void SelectSquare(int x, int y){
         DeselectSquare();
+
+        if(chessBoard.gameOver || !canMove || (online && chessBoard.turn != onlineColor)){
+            return;
+        }
+
         selectedSquare[0] = x;
         selectedSquare[1] = y;
         SquareState[x,y] = 1;

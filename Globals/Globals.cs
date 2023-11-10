@@ -17,10 +17,13 @@ public static class SharedFunctions
 
 
     public static string GetPiecePng(string piece, int color){
-        if(piece == "ST"){
+        if(piece == "W"){
             return null;
         }
-        return Globals.basePath + "images/" + piece + (color == 0? "w" : "b") + ".png";;
+        return Globals.basePath + "images/" + piece + 
+        (piece == "ST" ? "":
+            (color == 0? "w" : "b")
+        ) + ".png?1";
     }
 
     public static void GetRenderedBoard(ChessBoard board, string[,,] boardPNGs)

@@ -46,7 +46,7 @@ public static class Pieces
         //& nothing
         //*Statue (does nothing)
         {"ST",new PieceMovement(
-            canBeCapturedVal: false
+            canBeCapturedVal: true
         )},
         //& fairyChess
         //*Berolina pawn
@@ -115,6 +115,11 @@ public static class Pieces
             enPassantVal: true,
             canPromoteVal: 1,
             blastResistantVal: true
+        )},
+
+        //& WALL AKA literally nothing
+        {"W",new PieceMovement(
+            canBeCapturedVal: false
         )},
 
         

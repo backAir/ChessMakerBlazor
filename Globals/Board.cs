@@ -248,6 +248,10 @@ public class ChessBoard
         PageClass.DeselectSquare();
         PageClass.RefreshBoard();
 
+        if(chainCapture){
+            PageClass.SelectSquare(toX,toY);
+        }
+
         int gameEnd;
         if (killedOpponentKing)
         {

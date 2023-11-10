@@ -15,7 +15,7 @@
             string squareColor = Chess.IsWhiteSquare(currentCol, currentRow) ? "white" : "black";
 
             var piece = Chess.chessBoard.board[currentCol, currentRow];
-            @if(piece != null && piece.pieceString[0] == "ST"){
+            @if(piece != null && piece.pieceString[0] == "W"){
                 squareColor = "transparent";
             }
 

@@ -14,27 +14,27 @@
 					"label": "hex chessboard"
 				},
 				{
-					"line": 64,
+					"line": 65,
 					"column": 24,
 					"label": "online waiting ui"
 				},
 				{
-					"line": 78,
+					"line": 79,
 					"column": 18,
 					"label": "side ui"
 				},
 				{
-					"line": 349,
+					"line": 356,
 					"column": 16,
 					"label": "create game"
 				},
 				{
-					"line": 383,
+					"line": 390,
 					"column": 13,
 					"label": "board actions"
 				},
 				{
-					"line": 499,
+					"line": 511,
 					"column": 9,
 					"label": "drag and drop"
 				}
